@@ -2,7 +2,7 @@
 A collaborate story building game, created by Vivian Lee, Ziyin Zhang, and Jonathan King
 
 Project Description:
-	The title of our project is WeStory, which is a collaborative story building game where
+    The title of our project is WeStory, which is a collaborative story building game where
 two players work together to create a story based on a prompt given. The basic premise is that
 players will be given a topic or a simple story line, and it is up to them to write a coherent story
 in the following pattern ­ Player A begins to write a sentence, but leaves the sentence unfinished
@@ -10,8 +10,8 @@ for player B. Player B then finishes Player A’s sentence and starts another se
 A finishes player B’s sentence and so on. The game aspect of this story comes from the timed
 nature of the program, where the players have a certain amount of time to come up with a story
 based on the topics given.
-	After finishing the story, if the players wish, they can post the story to 
-www.we­story.tumblr.com after giving their story a title.
+    After finishing the story, if the players wish, they can post the story to
+  www.we­story.tumblr.com after giving their story a title.
 
 Instructions:
 - Three node modules are requred to run this program: express, socket.io, tumblr.js
