@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+<head>
+    <title>LMC2700 Final Project</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: #B2F5FF; border: none; padding: 10px; }
+      .Title {
+        border: #474646;
+        font-size: 50px;
+      }
+      p {
+        background-color: #474646;
+        color: white;
+      }
+      /*Button generator found at http://www.bestcssbuttongenerator.com/ */
+
+
+      #messages { list-style-type: none; margin: 4.5; padding: 50px 120px 50px 120px; }
+      #messages b { font-size: 120%; padding: 2px 4px; }
+      #messages b:nth-child(odd) { background: #d9d9d9; }
+
+      .modal-container {
+          position:fixed;
+          background-color:#fff;
+          width: 60%;
+          max-width: 568px;
+          left:50%;
+          padding:-5px;
+          border-radius:0px;
+
+
+          -webkit-transform: translate(-50%, -20%);
+          -ms-transform: translate(-50%, -20%);
+          transform: translate(-50%, -20%);
+
+      }
+
+      .modal:before {
+          content:"";
+          position:fixed;
+          display: blocked;
+          background-color:rgba(0,0,0,.9);
+          top:0;
+          left:0;
+          height:100%;
+          width:100%;
+      }
+
+      .modal:target {
+          display:none;
+      }
+
+      .modal:target .modal-container{
+          -webkit-transform: translate(-50%, 1000%);
+          -ms-transform: translate(-50%, 1000%);
+          transform: translate(-50%, 1000%);
+      }
+
+      .close {
+  	      background: #606061;
+  	      color: #FFFFFF;
+  	      line-height: 25px;
+  	      position: absolute;
+          right: -12px;
+ 	      text-align: center;
+  	      top: -10px;
+       	  width: 24px;
+  	      text-decoration: none;
+  	      font-weight: bold;
+       	  -webkit-border-radius: 12px;
+  	      -moz-border-radius: 12px;
+  	      border-radius: 12px;
+  	      -moz-box-shadow: 1px 1px 3px #000;
+  	      -webkit-box-shadow: 1px 1px 3px #000;
+  	      box-shadow: 1px 1px 3px #000;
+       }
+
+      .close:hover { background: #00d9ff; }
+
+    </style>
+  </head>
+  <body>
+
+  <div class="Title">
+    <p align ="left"> <img src="http://s13.postimg.org/xa9br63jr/Screen_Shot_2015_11_29_at_9_43_45_PM.png"/> &nbsp;
+    <img src = "http://s29.postimg.org/q6xovj1j7/Screen_Shot_2015_11_29_at_9_43_52_PM.png"/>
+    <textarea id="textbox" name="text" rows="3" cols = "50"  readonly>[Prompt]
+    </textarea> &nbsp;
+    <img src="http://s2.postimg.org/x60ypshh5/Screen_Shot_2015_11_30_at_3_52_36_AM.png" onclick="socketTimer();" height="45" width="99">
+    &nbsp;
+    <span id="min">00</span>:<span id ="sec">00</span>
+    &nbsp;
+    <img src="http://icons.iconarchive.com/icons/uiconstock/stitched-social-media/512/share-icon.png" onclick="postStory();" height="40" width="40">
+
+  </p>
+  </div>
+
+
+
+    <ul id="messages"></ul>
+    <form action="">
+      <input id="m" autocomplete="off" value="Click the START button to start typing!" maxlength="130" disabled/><button>Send</button>
+    </form>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var playerID = 0;
+      var numCharacter = 0;
+      var promptText;
+
+      var socket = io();
+      $('form').submit(function(){
+        socket.emit('chat message', $('#m').val());
+        $('#m').val('');
+        return false;
+      });
+      function socketTimer() {
+        socket.emit('startT', true);
+        document.getElementById('m').disabled = false;
+        document.getElementById('m').value = "";
+      }
+
+      function postStory() {
+        var title = prompt("What is the title of your story:");
+        var name = prompt("Enter the names of the players:", "Vivian and Linda");
+        console.log("Title: " + title + ";");
+        if (title == "" || title == null) {
+          title = promptText;
+        }
+        console.log("Name: " + name + ";");
+        if (name == "" || name == null) {
+          name = "Anonymous";
+        }
+        socket.emit('post', "\'" + title + "\'" + " by " + name);
+        confirm("Go to we-story.tumblr.com to see your finished story.");
+      }
+
+      socket.on('chat message', function(msg){
+        numCharacter = numCharacter + msg.length;
+        if (numCharacter > 150) {
+          $('#messages').append($('<br>'));
+          $('#messages').append($('<br>'));
+          numCharacter = msg.length;
+        }
+        $('#messages').append($('<b>').text(msg));
+      });
+      socket.on('timer', function(msg){
+          document.getElementById('min').innerHTML = msg[0];
+          document.getElementById('sec').innerHTML = msg[1];
+      });
+      socket.on('done', function(msg){
+        confirm("Time is up! Click the share button and post your story to Tumblr!");
+      });
+
+      socket.on('prompt', function(msg) {
+        promptText = msg;
+          var textarea = document.getElementById("textbox");
+          textarea.value = msg;
+      });
+
+      //player id
+      socket.on('playerID', function(msg){
+        if (playerID = 0) {
+          playerID = msg;
+        }
+      });
+      socket.on('playerJoined', function(msg){
+        console.log("New player joined");
+        $('#messages').append($('<br>'));
+        $('#messages').append($('<li>').text("Player" + msg + " joined the story!"));
+        $('#messages').append($('<br>'));
+      });
+      socket.on('playerLeft', function(msg){
+        console.log("A player left");
+        $('#messages').append($('<br>'));
+        $('#messages').append($('<li>').text("A player Left."));
+        $('#messages').append($('<br>'));
+      })
+
+    </script>
+
+    <div class="modal" id="game">
+        <div class="modal-container">
+            <img src = "http://s28.postimg.org/cx544x8lp/WESTORYWELCOME.png"/>
+            <a href="#game" title="Close" class = "close">X</a>
+        </div>
+    </div>
+  </body>
+</html>
